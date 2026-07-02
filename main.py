@@ -35,12 +35,12 @@ except Exception as e:
     logger.error(f"Failed to initialize Gemini Client: {e}")
     client = None
 
-# System instruction as strictly required by the prompt, expanded for Gen-Z tags
+# System instruction as strictly required by the prompt, expanded for Gen-Z tags and medium captions
 SYSTEM_INSTRUCTION = (
     "You are the AI engine for 'CapCore'. Transform the user's input into three distinct social media captions and a list of social tags. "
     "Prioritize linguistic precision and natural phrasing. NEVER use generic AI clichés. "
     "Output ONLY a valid JSON object matching this schema: "
-    "{'literary': 'eloquent and deep', 'story': 'casual and engaging', 'micro': '1-4 words max', "
+    "{'literary': 'eloquent and deep', 'medium': 'one or two sentences, well-balanced', 'micro': '1-4 words max', "
     "'tags': '5-8 modern aesthetic Gen-Z tags and hashtags for Instagram, Snapchat, X, etc.'}."
 )
 

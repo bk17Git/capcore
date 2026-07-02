@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CapCore - AI-Powered Caption Generator</title>
+    <!-- SVG Favicon Data URI -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2306b6d4'/%3E%3Cstop offset='100%25' stop-color='%233b82f6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='45' fill='url(%23grad)'/%3E%3Ccircle cx='50' cy='50' r='38' fill='%23000000'/%3E%3Ctext x='50' y='65' font-family='Outfit, sans-serif' font-weight='800' font-size='48' fill='%2306b6d4' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter and Outfit -->
@@ -254,7 +256,7 @@
                             </button>
                         </div>
 
-                        <!-- Story Card -->
+                        <!-- Medium Card -->
                         <div
                             class="bg-cardBg/40 border border-zinc-800/80 rounded-xl p-5 flex flex-col justify-between hover:border-zinc-700/60 transition-all duration-300 relative group overflow-hidden">
                             <div
@@ -263,19 +265,19 @@
                             <div>
                                 <div class="flex justify-between items-start mb-3">
                                     <div>
-                                        <h3 class="text-sm font-semibold tracking-wider uppercase text-zinc-400">Story
+                                        <h3 class="text-sm font-semibold tracking-wider uppercase text-zinc-400">Medium
                                         </h3>
-                                        <p class="text-[10px] text-zinc-500">Casual & Engaging</p>
+                                        <p class="text-[10px] text-zinc-500">1-2 Sentences</p>
                                     </div>
                                     <span
                                         class="text-xs px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400"><i
-                                            data-lucide="message-square" class="w-3.5 h-3.5 inline mr-1"></i>Vibe</span>
+                                            data-lucide="align-center" class="w-3.5 h-3.5 inline mr-1"></i>Vibe</span>
                                 </div>
-                                <p id="caption-story"
+                                <p id="caption-medium"
                                     class="text-sm text-zinc-200 leading-relaxed font-light mt-2 min-h-[80px] whitespace-pre-line">
                                 </p>
                             </div>
-                            <button onclick="copyCaption('caption-story', this)"
+                            <button onclick="copyCaption('caption-medium', this)"
                                 class="mt-6 w-full py-2 px-4 rounded-lg bg-zinc-900 border border-zinc-800/80 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-[0.97] cursor-pointer">
                                 <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                                 <span>Copy Caption</span>
@@ -575,7 +577,7 @@
 
                 // Inject texts into output cards
                 document.getElementById('caption-literary').textContent = data.literary || 'N/A';
-                document.getElementById('caption-story').textContent = data.story || 'N/A';
+                document.getElementById('caption-medium').textContent = data.medium || 'N/A';
                 document.getElementById('caption-micro').textContent = data.micro || 'N/A';
 
                 // Parse and render tags dynamically (handles both String and Array response types)
