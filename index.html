@@ -577,7 +577,7 @@
 
                 // Inject texts into output cards
                 document.getElementById('caption-literary').textContent = data.literary || 'N/A';
-                document.getElementById('caption-medium').textContent = data.medium || 'N/A';
+                document.getElementById('caption-medium').textContent = data.medium || data.story || 'N/A';
                 document.getElementById('caption-micro').textContent = data.micro || 'N/A';
 
                 // Parse and render tags dynamically (handles both String and Array response types)
