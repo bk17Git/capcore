@@ -550,6 +550,46 @@
             // Prevent dropzone edits
             dropzone.style.pointerEvents = 'none';
 
+            // Show skeleton loaders immediately to mask API latency
+            const literarySkeleton = `
+                <div class="animate-pulse space-y-2.5 mt-2">
+                    <div class="h-3 bg-zinc-800/80 rounded w-full"></div>
+                    <div class="h-3 bg-zinc-800/80 rounded w-[90%]"></div>
+                    <div class="h-3 bg-zinc-800/80 rounded w-[75%]"></div>
+                </div>
+            `;
+            const mediumSkeleton = `
+                <div class="animate-pulse space-y-2.5 mt-2">
+                    <div class="h-3 bg-zinc-800/80 rounded w-full"></div>
+                    <div class="h-3 bg-zinc-800/80 rounded w-[45%]"></div>
+                </div>
+            `;
+            const microSkeleton = `
+                <div class="animate-pulse flex items-center justify-center min-h-[80px]">
+                    <div class="h-5 bg-zinc-800/80 rounded w-[60%]"></div>
+                </div>
+            `;
+            const tagsSkeleton = `
+                <div class="animate-pulse flex flex-wrap gap-1.5 mt-3 w-full">
+                    <div class="h-6 bg-zinc-800/80 rounded-full w-14"></div>
+                    <div class="h-6 bg-zinc-800/80 rounded-full w-16"></div>
+                    <div class="h-6 bg-zinc-800/80 rounded-full w-12"></div>
+                    <div class="h-6 bg-zinc-800/80 rounded-full w-20"></div>
+                </div>
+            `;
+
+            document.getElementById('caption-literary').innerHTML = literarySkeleton;
+            document.getElementById('caption-medium').innerHTML = mediumSkeleton;
+            document.getElementById('caption-micro').innerHTML = microSkeleton;
+            document.getElementById('caption-tags-container').innerHTML = tagsSkeleton;
+
+            // Show output grid with skeletons and scroll into view immediately
+            outputSection.classList.remove('hidden');
+            outputSection.classList.add('fade-in');
+            setTimeout(() => {
+                outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 50);
+
             const formData = new FormData();
             if (textValue) {
                 formData.append('text', textValue);
@@ -621,20 +661,13 @@
                     });
                 }
 
-                // Display outputs
-                outputSection.classList.remove('hidden');
-                outputSection.classList.add('fade-in');
-
-                // Smooth scroll to output
-                setTimeout(() => {
-                    outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
-
                 showAlert('Success', 'Captions generated successfully!', 'success');
 
             } catch (error) {
                 console.error(error);
                 showAlert('Generation Failed', error.message, 'error');
+                // Hide outputs if they failed to load
+                outputSection.classList.add('hidden');
             } finally {
                 // Exit loading state
                 submitBtn.disabled = false;
