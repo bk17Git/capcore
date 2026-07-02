@@ -1,0 +1,12 @@
+# Virtual environment folder
+venv/
+
+# Local configuration / secrets
+.env
+
+# Python caching
+__pycache__/
+*.pyc
+
+# macOS system files
+.DS_Store

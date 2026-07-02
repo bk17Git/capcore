@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CapCore - AI-Powered Caption Generator</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter and Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Lucide Icons via CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        title: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        darkBg: '#050508',
+                        cardBg: '#0e0e13',
+                        glowCyan: 'rgba(6, 182, 212, 0.15)',
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Smooth transitions */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom scrollbar for textareas */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0e0e13;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
+        }
+    </style>
+</head>
+
+<body class="bg-darkBg text-zinc-100 font-sans min-h-full flex flex-col relative overflow-x-hidden antialiased">
+    <!-- Sleek Top Glow Effect -->
+    <div
+        class="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[350px] bg-gradient-to-b from-cyan-500/10 via-indigo-500/5 to-transparent rounded-full blur-[100px] pointer-events-none -z-10">
+    </div>
+
+    <div class="flex-grow flex flex-col justify-between max-w-5xl w-full mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <!-- Main Layout -->
+        <div class="w-full">
+
+            <!-- Header Section -->
+            <header class="text-center mt-4 mb-8 sm:mb-12">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/80 border border-zinc-800 text-xs font-semibold tracking-wider text-cyan-400 mb-4 shadow-sm backdrop-blur-sm">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                    STATELESS AI GENERATOR
+                </div>
+                <h1 class="font-title text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight">
+                    <span
+                        class="bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">Cap</span><span
+                        class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Core</span>
+                </h1>
+                <p class="mt-3 text-zinc-400 text-sm sm:text-base max-w-md mx-auto font-light">
+                    Refine rough thoughts and imagery into three distinct, high-converting social media captions.
+                </p>
+            </header>
+
+            <!-- Main Interactive Area -->
+            <main class="grid gap-8">
+
+                <!-- Generator Card -->
+                <section
+                    class="bg-cardBg/60 border border-zinc-800/80 rounded-2xl p-5 sm:p-8 shadow-xl backdrop-blur-md">
+
+                    <!-- Privacy Notice Banner -->
+                    <div
+                        class="flex gap-3 bg-cyan-950/20 border border-cyan-800/20 rounded-xl p-3 sm:p-4 text-xs sm:text-sm text-zinc-400 mb-6">
+                        <div class="text-cyan-400 flex-shrink-0 mt-0.5">
+                            <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <span class="font-semibold text-cyan-400">Privacy First:</span> Uploaded photos are
+                            processed completely in-memory, sent directly to Gemini, and deleted instantly. No tracking,
+                            no files saved, and no databases.
+                        </div>
+                    </div>
+
+                    <form id="generator-form" class="space-y-6" onsubmit="generateCaptions(event)">
+
+                        <!-- Inputs Grid -->
+                        <div class="grid md:grid-cols-2 gap-6">
+
+                            <!-- Left: Text Input -->
+                            <div class="flex flex-col space-y-2">
+                                <label for="prompt-text"
+                                    class="text-xs sm:text-sm font-semibold tracking-wide text-zinc-300 flex items-center gap-1.5">
+                                    <i data-lucide="align-left" class="w-4 h-4 text-zinc-500"></i>
+                                    Rough Thoughts / Topic
+                                </label>
+                                <textarea id="prompt-text" rows="5"
+                                    placeholder="Write a brief description, keywords, or the overall vibe you want to capture..."
+                                    class="flex-grow bg-zinc-950/80 border border-zinc-800/80 rounded-xl p-4 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/40 transition-all duration-300 resize-none"></textarea>
+                            </div>
+
+                            <!-- Right: Image Upload -->
+                            <div class="flex flex-col space-y-2">
+                                <span
+                                    class="text-xs sm:text-sm font-semibold tracking-wide text-zinc-300 flex items-center gap-1.5">
+                                    <i data-lucide="image" class="w-4 h-4 text-zinc-500"></i>
+                                    Image (Optional)
+                                </span>
+
+                                <!-- File Drop Area -->
+                                <div id="dropzone"
+                                    class="flex-grow border-2 border-dashed border-zinc-800 hover:border-zinc-700/80 rounded-xl flex flex-col items-center justify-center p-6 text-center cursor-pointer transition-all duration-300 bg-zinc-950/40 hover:bg-zinc-950/60 select-none min-h-[148px]">
+                                    <input type="file" id="image-input" accept="image/*" class="hidden"
+                                        onchange="handleFileSelect(event)" />
+
+                                    <!-- Default State -->
+                                    <div id="dropzone-default" class="space-y-2 py-2">
+                                        <div
+                                            class="mx-auto w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 group-hover:text-cyan-400 transition-colors">
+                                            <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-zinc-300">Drag & drop image, or <span
+                                                    class="text-cyan-400 font-semibold underline underline-offset-2">browse</span>
+                                            </p>
+                                            <p class="text-xs text-zinc-500 mt-1">Supports PNG, JPG, WEBP (Max 10MB)</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Preview State (Hidden by Default) -->
+                                    <div id="dropzone-preview"
+                                         class="hidden w-full flex items-center justify-between gap-4 p-2 bg-zinc-900/60 rounded-lg border border-zinc-800/80 min-w-0">
+                                         <div class="flex items-center gap-3 overflow-hidden min-w-0 flex-grow">
+                                             <img id="thumbnail" src="" alt="Thumbnail"
+                                                 class="w-12 h-12 object-cover rounded bg-zinc-950 border border-zinc-800 flex-shrink-0" />
+                                             <div class="text-left overflow-hidden min-w-0 flex-grow">
+                                                 <p id="file-name" class="text-xs font-semibold text-zinc-200 truncate w-full"></p>
+                                                 <p id="file-size" class="text-[10px] text-zinc-500"></p>
+                                             </div>
+                                         </div>
+                                         <button type="button" onclick="removeFile(event)"
+                                             class="w-7 h-7 rounded-full bg-zinc-800/60 hover:bg-zinc-700/60 text-zinc-400 hover:text-zinc-200 flex items-center justify-center transition-colors flex-shrink-0">
+                                             <i data-lucide="x" class="w-4 h-4"></i>
+                                         </button>
+                                     </div>
+                                 </div>
+                             </div>
+                        </div>
+
+                        <!-- Action / Submit -->
+                        <div class="pt-2">
+                            <button type="submit" id="submit-btn"
+                                class="w-full relative overflow-hidden bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold tracking-wide py-3 px-6 rounded-xl shadow-lg hover:shadow-cyan-500/10 transition-all duration-300 transform active:scale-[0.98] flex items-center justify-center gap-2 group cursor-pointer">
+                                <span id="btn-text" class="flex items-center gap-2 font-semibold">
+                                    Generate Captions
+                                    <i data-lucide="arrow-right"
+                                        class="w-4 h-4 transition-transform group-hover:translate-x-0.5"></i>
+                                </span>
+                                <!-- Loading Spinner -->
+                                <span id="btn-spinner" class="hidden flex items-center gap-2 font-semibold">
+                                    <svg class="animate-spin h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
+                                    </svg>
+                                    Crafting Captions...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Output Section -->
+                <section id="output-section" class="hidden space-y-6 scroll-mt-8">
+                    <div class="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+                        <h2
+                            class="text-lg font-semibold text-zinc-200 font-title tracking-wide flex items-center gap-2">
+                            <i data-lucide="layers" class="w-4.5 h-4.5 text-cyan-400"></i>
+                            Your Generated Captions
+                        </h2>
+                        <span class="text-xs text-zinc-500 flex items-center gap-1">
+                            <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500"></i> Ready to copy
+                        </span>
+                    </div>
+
+                    <!-- Cards Grid -->
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                        <!-- Literary Card -->
+                        <div
+                            class="bg-cardBg/40 border border-zinc-800/80 rounded-xl p-5 flex flex-col justify-between hover:border-zinc-700/60 transition-all duration-300 relative group overflow-hidden">
+                            <div
+                                class="absolute top-0 right-0 w-[80px] h-[80px] bg-cyan-500/5 rounded-bl-full pointer-events-none">
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h3 class="text-sm font-semibold tracking-wider uppercase text-zinc-400">
+                                            Literary</h3>
+                                        <p class="text-[10px] text-zinc-500">Eloquent & Deep</p>
+                                    </div>
+                                    <span
+                                        class="text-xs px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400"><i
+                                            data-lucide="feather" class="w-3.5 h-3.5 inline mr-1"></i>Vibe</span>
+                                </div>
+                                <p id="caption-literary"
+                                    class="text-sm text-zinc-200 leading-relaxed font-light mt-2 min-h-[80px] whitespace-pre-line">
+                                </p>
+                            </div>
+                            <button onclick="copyCaption('caption-literary', this)"
+                                class="mt-6 w-full py-2 px-4 rounded-lg bg-zinc-900 border border-zinc-800/80 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-[0.97] cursor-pointer">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span>Copy Caption</span>
+                            </button>
+                        </div>
+
+                        <!-- Story Card -->
+                        <div
+                            class="bg-cardBg/40 border border-zinc-800/80 rounded-xl p-5 flex flex-col justify-between hover:border-zinc-700/60 transition-all duration-300 relative group overflow-hidden">
+                            <div
+                                class="absolute top-0 right-0 w-[80px] h-[80px] bg-indigo-500/5 rounded-bl-full pointer-events-none">
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h3 class="text-sm font-semibold tracking-wider uppercase text-zinc-400">Story
+                                        </h3>
+                                        <p class="text-[10px] text-zinc-500">Casual & Engaging</p>
+                                    </div>
+                                    <span
+                                        class="text-xs px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400"><i
+                                            data-lucide="message-square" class="w-3.5 h-3.5 inline mr-1"></i>Vibe</span>
+                                </div>
+                                <p id="caption-story"
+                                    class="text-sm text-zinc-200 leading-relaxed font-light mt-2 min-h-[80px] whitespace-pre-line">
+                                </p>
+                            </div>
+                            <button onclick="copyCaption('caption-story', this)"
+                                class="mt-6 w-full py-2 px-4 rounded-lg bg-zinc-900 border border-zinc-800/80 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-[0.97] cursor-pointer">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span>Copy Caption</span>
+                            </button>
+                        </div>
+
+                        <!-- Micro Card -->
+                        <div
+                            class="bg-cardBg/40 border border-zinc-800/80 rounded-xl p-5 flex flex-col justify-between hover:border-zinc-700/60 transition-all duration-300 relative group overflow-hidden">
+                            <div
+                                class="absolute top-0 right-0 w-[80px] h-[80px] bg-blue-500/5 rounded-bl-full pointer-events-none">
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h3 class="text-sm font-semibold tracking-wider uppercase text-zinc-400">Micro
+                                        </h3>
+                                        <p class="text-[10px] text-zinc-500">1-4 Words Max</p>
+                                    </div>
+                                    <span
+                                        class="text-xs px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400"><i
+                                            data-lucide="zap" class="w-3.5 h-3.5 inline mr-1"></i>Vibe</span>
+                                </div>
+                                <p id="caption-micro"
+                                    class="text-sm font-semibold text-cyan-400 mt-2 min-h-[80px] flex items-center justify-center text-center text-lg italic">
+                                </p>
+                            </div>
+                            <button onclick="copyCaption('caption-micro', this)"
+                                class="mt-6 w-full py-2 px-4 rounded-lg bg-zinc-900 border border-zinc-800/80 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-[0.97] cursor-pointer">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span>Copy Caption</span>
+                            </button>
+                        </div>
+
+                        <!-- Social Tags Card -->
+                        <div
+                            class="bg-cardBg/40 border border-zinc-800/80 rounded-xl p-5 flex flex-col justify-between hover:border-zinc-700/60 transition-all duration-300 relative group overflow-hidden">
+                            <div
+                                class="absolute top-0 right-0 w-[80px] h-[80px] bg-emerald-500/5 rounded-bl-full pointer-events-none">
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h3 class="text-sm font-semibold tracking-wider uppercase text-zinc-400">Social
+                                            Tags</h3>
+                                        <p class="text-[10px] text-zinc-500">Instagram, Snapchat, X</p>
+                                    </div>
+                                    <span
+                                        class="text-xs px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400"><i
+                                            data-lucide="hash" class="w-3.5 h-3.5 inline mr-1"></i>GenZ</span>
+                                </div>
+                                <div id="caption-tags-container"
+                                    class="flex flex-wrap gap-1.5 mt-3 min-h-[80px] content-start"></div>
+                                <p id="caption-tags-raw" class="hidden"></p>
+                            </div>
+                            <button onclick="copyCaption('caption-tags-raw', this)"
+                                class="mt-6 w-full py-2 px-4 rounded-lg bg-zinc-900 border border-zinc-800/80 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-[0.97] cursor-pointer">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span>Copy Tags</span>
+                            </button>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- Toast / Custom Notification Alert Container -->
+                <div id="alert-box"
+                    class="hidden fixed bottom-5 left-4 right-4 sm:left-auto sm:right-5 sm:w-96 z-50 bg-zinc-900 border border-zinc-800 p-4 rounded-xl shadow-2xl flex items-start gap-3 fade-in">
+                    <div id="alert-icon" class="flex-shrink-0"></div>
+                    <div class="flex-grow">
+                        <h4 id="alert-title" class="text-xs font-semibold uppercase tracking-wider text-zinc-200">System
+                            Alert</h4>
+                        <p id="alert-msg" class="text-xs text-zinc-400 mt-0.5 leading-relaxed"></p>
+                    </div>
+                    <button onclick="dismissAlert()" class="text-zinc-500 hover:text-zinc-300">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+            </main>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-16 text-center text-zinc-600 text-xs border-t border-zinc-900 pt-6">
+            <p class="font-bold">&copy; 2026 CapCore. A <a href="https://lightwayco.site" target="_blank"
+                    class="font-bold hover:underline normal-case" style="color: #0492c2;">LightWayCo</a> Product.
+                Powered by <a href="https://gemini.google.com" target="_blank"
+                    class="font-bold hover:underline normal-case" style="color: #0492c2;">Gemini</a></p>
+        </footer>
+    </div>
+
+    <!-- Frontend Scripting -->
+    <script>
+        // --- DEPLOYMENT CONFIGURATION ---
+        // For Option B (Netlify frontend + external backend):
+        // Replace this with your live backend API URL (e.g. 'https://capcore-api.onrender.com')
+        // Leave it as empty string '' for local hosting.
+        const API_BASE_URL = '';
+
+        // Store selected file
+        let selectedFile = null;
+
+        // Setup dropzone event listeners
+        const dropzone = document.getElementById('dropzone');
+        const imageInput = document.getElementById('image-input');
+        const dropzoneDefault = document.getElementById('dropzone-default');
+        const dropzonePreview = document.getElementById('dropzone-preview');
+        const thumbnail = document.getElementById('thumbnail');
+        const fileName = document.getElementById('file-name');
+        const fileSize = document.getElementById('file-size');
+
+        // Dropzone click -> Trigger Input
+        dropzone.addEventListener('click', () => {
+            if (!selectedFile) {
+                imageInput.click();
+            }
+        });
+
+        // Drag & Drop Handlers
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.add('border-cyan-500', 'bg-zinc-950/80');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.remove('border-cyan-500', 'bg-zinc-950/80');
+            }, false);
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+
+        function handleFile(file) {
+            // Validate file is image
+            if (!file.type.startsWith('image/')) {
+                showAlert('Invalid File', 'Please upload a valid image file (PNG, JPG, WEBP).', 'error');
+                return;
+            }
+            // Validate file size (10MB max)
+            if (file.size > 10 * 1024 * 1024) {
+                showAlert('File Too Large', 'The uploaded image size exceeds 10MB.', 'error');
+                return;
+            }
+
+            selectedFile = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatBytes(file.size);
+
+            // Read for thumbnail preview
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                thumbnail.src = e.target.result;
+                dropzoneDefault.classList.add('hidden');
+                dropzonePreview.classList.remove('hidden');
+                // Re-init lucide icons inside dropzone
+                lucide.createIcons();
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function removeFile(event) {
+            if (event) {
+                event.stopPropagation(); // Avoid triggering dropzone click
+            }
+            selectedFile = null;
+            imageInput.value = '';
+            thumbnail.src = '';
+            dropzonePreview.classList.add('hidden');
+            dropzoneDefault.classList.remove('hidden');
+            // Re-init lucide icons inside dropzone
+            lucide.createIcons();
+        }
+
+        // Helper to format bytes
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Alert Toast system
+        let alertTimeout = null;
+        function showAlert(title, message, type = 'info') {
+            const alertBox = document.getElementById('alert-box');
+            const alertIcon = document.getElementById('alert-icon');
+            const alertTitle = document.getElementById('alert-title');
+            const alertMsg = document.getElementById('alert-msg');
+
+            alertTitle.textContent = title;
+            alertMsg.textContent = message;
+
+            // Icon markup based on alert type
+            if (type === 'error') {
+                alertIcon.innerHTML = `<i data-lucide="alert-circle" class="w-5 h-5 text-red-500"></i>`;
+                alertBox.classList.remove('border-zinc-800');
+                alertBox.classList.add('border-red-950/80');
+            } else if (type === 'success') {
+                alertIcon.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i>`;
+                alertBox.classList.remove('border-zinc-800');
+                alertBox.classList.add('border-emerald-950/80');
+            } else {
+                alertIcon.innerHTML = `<i data-lucide="info" class="w-5 h-5 text-cyan-400"></i>`;
+                alertBox.classList.remove('border-zinc-800');
+                alertBox.classList.add('border-cyan-950/80');
+            }
+
+            lucide.createIcons();
+            alertBox.classList.remove('hidden');
+
+            // Clear previous timeout
+            if (alertTimeout) clearTimeout(alertTimeout);
+
+            // Auto hide after 5 seconds
+            alertTimeout = setTimeout(() => {
+                dismissAlert();
+            }, 5000);
+        }
+
+        function dismissAlert() {
+            const alertBox = document.getElementById('alert-box');
+            alertBox.classList.add('hidden');
+            alertBox.classList.remove('border-red-950/80', 'border-emerald-950/80', 'border-cyan-950/80');
+            alertBox.classList.add('border-zinc-800');
+        }
+
+        // Generate captions fetch logic
+        async function generateCaptions(event) {
+            event.preventDefault();
+
+            const textInput = document.getElementById('prompt-text');
+            const submitBtn = document.getElementById('submit-btn');
+            const btnText = document.getElementById('btn-text');
+            const btnSpinner = document.getElementById('btn-spinner');
+            const outputSection = document.getElementById('output-section');
+
+            const textValue = textInput.value.trim();
+
+            // Validate that we have at least one input
+            if (!textValue && !selectedFile) {
+                showAlert('Input Required', 'Please provide either some rough thoughts or upload an image first.', 'error');
+                return;
+            }
+
+            // Enter loading state
+            submitBtn.disabled = true;
+            btnText.classList.add('hidden');
+            btnSpinner.classList.remove('hidden');
+            textInput.disabled = true;
+            // Prevent dropzone edits
+            dropzone.style.pointerEvents = 'none';
+
+            const formData = new FormData();
+            if (textValue) {
+                formData.append('text', textValue);
+            }
+            if (selectedFile) {
+                formData.append('image', selectedFile);
+            }
+
+            try {
+                // Dynamically build endpoint URL based on API_BASE_URL configuration
+                const apiEndpoint = API_BASE_URL 
+                    ? `${API_BASE_URL.replace(/\/$/, '')}/generate-captions` 
+                    : '/generate-captions';
+
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to generate captions. Please try again.');
+                }
+
+                // Inject texts into output cards
+                document.getElementById('caption-literary').textContent = data.literary || 'N/A';
+                document.getElementById('caption-story').textContent = data.story || 'N/A';
+                document.getElementById('caption-micro').textContent = data.micro || 'N/A';
+
+                // Parse and render tags dynamically (handles both String and Array response types)
+                let tagList = [];
+                let tagsRawString = '';
+
+                if (data.tags) {
+                    if (Array.isArray(data.tags)) {
+                        tagList = data.tags;
+                        tagsRawString = data.tags.join(' ');
+                    } else if (typeof data.tags === 'string') {
+                        tagList = data.tags.split(/[\s,]+/).filter(t => t.trim().length > 0);
+                        tagsRawString = data.tags;
+                    } else if (typeof data.tags === 'object') {
+                        tagList = Object.values(data.tags).map(v => String(v));
+                        tagsRawString = tagList.join(' ');
+                    } else {
+                        tagsRawString = String(data.tags);
+                        tagList = [tagsRawString];
+                    }
+                }
+
+                document.getElementById('caption-tags-raw').textContent = tagsRawString;
+                const tagsContainer = document.getElementById('caption-tags-container');
+                tagsContainer.innerHTML = '';
+
+                if (tagList.length === 0) {
+                    tagsContainer.innerHTML = '<span class="text-xs text-zinc-600 italic">No tags generated</span>';
+                } else {
+                    tagList.forEach(tag => {
+                        let cleanTag = tag.trim();
+                        if (cleanTag.length > 0) {
+                            if (!cleanTag.startsWith('#')) {
+                                cleanTag = '#' + cleanTag;
+                            }
+                            const pill = document.createElement('span');
+                            pill.className = 'text-[11px] px-2 py-0.5 rounded bg-zinc-900/80 border border-zinc-800 text-zinc-400 font-medium hover:text-cyan-400 hover:border-cyan-500/30 transition-all select-all cursor-pointer';
+                            pill.textContent = cleanTag;
+                            tagsContainer.appendChild(pill);
+                        }
+                    });
+                }
+
+                // Display outputs
+                outputSection.classList.remove('hidden');
+                outputSection.classList.add('fade-in');
+
+                // Smooth scroll to output
+                setTimeout(() => {
+                    outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+
+                showAlert('Success', 'Captions generated successfully!', 'success');
+
+            } catch (error) {
+                console.error(error);
+                showAlert('Generation Failed', error.message, 'error');
+            } finally {
+                // Exit loading state
+                submitBtn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnSpinner.classList.add('hidden');
+                textInput.disabled = false;
+                dropzone.style.pointerEvents = 'auto';
+            }
+        }
+
+        // Clipboard Copy Logic
+        function copyCaption(elementId, btn) {
+            const text = document.getElementById(elementId).textContent;
+            if (!text) return;
+
+            navigator.clipboard.writeText(text).then(() => {
+                const iconSpan = btn.querySelector('i');
+                const textSpan = btn.querySelector('span');
+                const originalHtml = btn.innerHTML;
+
+                // Update UI state
+                btn.innerHTML = `<i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i> <span class="text-emerald-400">Copied!</span>`;
+                btn.classList.add('border-emerald-800/80', 'bg-emerald-950/15');
+                lucide.createIcons();
+
+                // Revert state
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.classList.remove('border-emerald-800/80', 'bg-emerald-950/15');
+                    lucide.createIcons();
+                }, 2000);
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+                showAlert('Copy Failed', 'Unable to copy text to clipboard.', 'error');
+            });
+        }
+
+        // Initialize Lucide icons on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+
+</html>
