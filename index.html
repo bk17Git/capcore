@@ -493,15 +493,19 @@
             // Icon markup based on alert type
             if (type === 'error') {
                 alertIcon.innerHTML = `<i data-lucide="alert-circle" class="w-5 h-5 text-red-500"></i>`;
-                alertBox.classList.remove('border-zinc-800');
+                alertBox.classList.remove('border-zinc-800', 'border-emerald-950/80', 'border-cyan-950/80', 'border-amber-950/80');
                 alertBox.classList.add('border-red-950/80');
             } else if (type === 'success') {
                 alertIcon.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i>`;
-                alertBox.classList.remove('border-zinc-800');
+                alertBox.classList.remove('border-zinc-800', 'border-red-950/80', 'border-cyan-950/80', 'border-amber-950/80');
                 alertBox.classList.add('border-emerald-950/80');
+            } else if (type === 'warning') {
+                alertIcon.innerHTML = `<i data-lucide="clock" class="w-5 h-5 text-amber-400"></i>`;
+                alertBox.classList.remove('border-zinc-800', 'border-red-950/80', 'border-cyan-950/80', 'border-emerald-950/80');
+                alertBox.classList.add('border-amber-950/80');
             } else {
                 alertIcon.innerHTML = `<i data-lucide="info" class="w-5 h-5 text-cyan-400"></i>`;
-                alertBox.classList.remove('border-zinc-800');
+                alertBox.classList.remove('border-zinc-800', 'border-red-950/80', 'border-emerald-950/80', 'border-amber-950/80');
                 alertBox.classList.add('border-cyan-950/80');
             }
 
@@ -612,7 +616,9 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.detail || 'Failed to generate captions. Please try again.');
+                    const err = new Error(data.detail || 'Failed to generate captions. Please try again.');
+                    err.status = response.status;
+                    throw err;
                 }
 
                 // Inject texts into output cards
@@ -665,7 +671,11 @@
 
             } catch (error) {
                 console.error(error);
-                showAlert('Generation Failed', error.message, 'error');
+                if (error.status === 429) {
+                    showAlert('Rate Limit Reached', 'The lifetime free tier is rate-limited per minute. Please wait about 60 seconds and try again.', 'warning');
+                } else {
+                    showAlert('Generation Failed', error.message, 'error');
+                }
                 // Hide outputs if they failed to load
                 outputSection.classList.add('hidden');
             } finally {

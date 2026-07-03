@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from google import genai
-from google.genai import types
+from google.genai import types, errors
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -148,6 +148,17 @@ async def generate_captions(
 
     except HTTPException:
         raise
+    except errors.APIError as ae:
+        logger.error(f"Gemini API Error: {ae.message} (Code: {ae.code})")
+        if ae.code == 429:
+            raise HTTPException(
+                status_code=429,
+                detail="Rate limit reached. Please wait about 60 seconds before trying again (free tier limit)."
+            )
+        raise HTTPException(
+            status_code=ae.code or 502,
+            detail=f"Gemini API Error: {ae.message}"
+        )
     except Exception as e:
         logger.error(f"Error during caption generation: {e}")
         raise HTTPException(
